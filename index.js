@@ -18,7 +18,6 @@ app.get('/', (req, res) => {
 })
 
 app.get('/login', (req, res) => {
-  console.log(req.user)
   res.render('login')
 })
 
@@ -26,7 +25,6 @@ app.post('/login', async (req, res) => {
   const { email, password } = req.body
   let user = await userModel.findOne({ email })
   if (!user) {
-    console.log("user not found")
     res.redirect('index')
   }
   console.log("user found")
@@ -61,10 +59,11 @@ app.post('/register', async (req, res) => {
     })
   })
 })
-app.get('/logout', (req, res) => {
+app.get('/logout', isLoggedIn, (req, res) => {
   res.cookie('token', "")
   res.redirect('/')
 })
+
 app.get('/createpost', isLoggedIn, (req, res) => {
   res.render('profile')
 })
@@ -73,9 +72,9 @@ app.get('/profile', isLoggedIn, async (req, res) => {
   let user = await userModel.findOne({ email: req.user.email })
   res.render('profile', { user })
 })
+
 app.post('/createpost', isLoggedIn, async (req, res) => {
   let user = await userModel.findOne({ email: req.user.email })
-  console.log(user)
   let { content } = req.body
   let post = await postModel.create({
     user: user._id,
@@ -93,14 +92,26 @@ app.get('/read', async (req, res) => {
 })
 app.get('/like/:id', isLoggedIn, async (req, res) => {
   let post = await postModel.findOne({ _id: req.params.id }).populate('user', 'name')
-  console.log("post", post)
   if (!post.likes.includes(req.user.id)) {
     post.likes.push(req.user.id)
   } else {
     post.likes.splice(post.likes.indexOf(req.user.id), 1)
   }
-  console.log("post.likes", post.likes)
   await post.save()
+  res.redirect('/read')
+})
+app.get('/editpost/:id', isLoggedIn, async (req, res) => {
+  let post = await postModel.findOne({ _id: req.params.id }).populate('user', 'name')
+  if(post.user._id.toString() === req.user.id.toString()){
+
+    res.render('edit', { post })
+  }else{
+    res.redirect('/read')
+  }
+})
+app.post('/update/:id', isLoggedIn, async (req, res) => {
+  let post = await postModel.findOneAndUpdate({ _id: req.params.id }, { content: req.body.content }, { new: true })
+
   res.redirect('/read')
 })
 function isLoggedIn(req, res, next) {

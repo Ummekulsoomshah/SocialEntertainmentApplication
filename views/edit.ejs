@@ -31,11 +31,10 @@
         <div class="row">
             <div class="col-7">
                 <a href="/read">Read Posts</a>
-                <h1><%= user.name%></h1>
-                <form method="post" action="/createpost">
+                <form method="post" action="/update/<%= post._id%>">
                     <div class="form-group">
-                      <label for="exampleFormControlTextarea1">Write your post</label>
-                      <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" name="content"></textarea>
+                      <label for="exampleFormControlTextarea1">Edit your post</label>
+                      <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" name="content"><%= post.content%></textarea>
                     </div>
                     <input type="submit" value="Submit" class="border-rounded btn btn-primary" />
                   </form>
